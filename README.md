@@ -5,6 +5,7 @@ that can handle it, and logs the cost of every request.
 
 | Tier you ask for | What runs it | Roughly |
 |---|---|---|
+| `free` | Gemini 2.5 Flash-Lite (Groq Llama 3.3 70B fallback) | $0 — rate-limited; overflows to `cheap` |
 | `cheap` | DeepSeek V4 Flash (GLM FlashX fallback) | ~$0.14 / 1M input tokens |
 | `standard` | DeepSeek V4 Pro (GLM-5 fallback) | ~$0.44 / 1M input tokens |
 | `heavy` | Claude Sonnet (needs Anthropic key, else degrades to `standard`) | Claude pricing |
@@ -24,6 +25,12 @@ You'll be asked to paste:
 1. **DeepSeek API key** (required) — platform.deepseek.com, pay-as-you-go
 2. **Z.AI key** (optional) — vendor fallback
 3. **Anthropic key** (optional) — enables the `heavy` tier
+4. **Google AI Studio key** (optional) — aistudio.google.com, enables the `free` tier
+5. **Groq key** (optional) — console.groq.com, `free` tier backup
+
+The `free` tier uses genuinely free rate-limited APIs (roughly 1,000
+requests/day each). When you hit the daily caps it automatically
+overflows to the paid `cheap` tier, so nothing ever breaks.
 
 Keys live in `/etc/llm-router.env` (root-only). Never paste them in chat.
 The script prints a **router master key** — that's the single credential

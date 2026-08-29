@@ -48,6 +48,8 @@ prompt_key () { # $1=VAR $2=label $3=required(yes/no)
 prompt_key DEEPSEEK_API_KEY  "DeepSeek API key (platform.deepseek.com)" required
 prompt_key ZAI_API_KEY       "Z.AI GLM API key (z.ai, optional fallback)" optional
 prompt_key ANTHROPIC_API_KEY "Anthropic API key (optional, powers the 'heavy' tier)" optional
+prompt_key GEMINI_API_KEY    "Google AI Studio key (aistudio.google.com, optional, powers the 'free' tier)" optional
+prompt_key GROQ_API_KEY      "Groq API key (console.groq.com, optional, 'free' tier backup)" optional
 
 if ! grep -q "^ROUTER_MASTER_KEY=" "$ENV_FILE"; then
   MK="sk-router-$(openssl rand -hex 24)"
@@ -61,6 +63,8 @@ grep -q "^USAGE_DB=" "$ENV_FILE" || echo "USAGE_DB=${DATA_DIR}/usage.db" >> "$EN
 # placeholders so LiteLLM never crashes on a missing optional env var
 grep -q "^ZAI_API_KEY=" "$ENV_FILE"       || echo "ZAI_API_KEY=unset" >> "$ENV_FILE"
 grep -q "^ANTHROPIC_API_KEY=" "$ENV_FILE" || echo "ANTHROPIC_API_KEY=unset" >> "$ENV_FILE"
+grep -q "^GEMINI_API_KEY=" "$ENV_FILE"    || echo "GEMINI_API_KEY=unset" >> "$ENV_FILE"
+grep -q "^GROQ_API_KEY=" "$ENV_FILE"      || echo "GROQ_API_KEY=unset" >> "$ENV_FILE"
 
 echo "==> systemd service"
 cat > /etc/systemd/system/llm-router.service <<UNIT

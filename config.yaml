@@ -1,6 +1,8 @@
 # ============================================================
 # Dan's LLM Router — LiteLLM proxy config
-# Three tiers. Callers ask for a tier, not a vendor:
+# Four tiers. Callers ask for a tier, not a vendor:
+#   free     -> $0 tinkering/low-volume (Gemini Flash-Lite, Groq Llama
+#               fallback; overflows to cheap when daily limits hit)
 #   cheap    -> bulk/mechanical work   (DeepSeek V4 Flash, GLM fallback)
 #   standard -> normal coding/drafting (DeepSeek V4 Pro, GLM-5 fallback)
 #   heavy    -> hard reasoning         (Claude, falls back to standard
@@ -12,6 +14,21 @@
 # ============================================================
 
 model_list:
+  # ---- free tier (rate-limited free APIs; keys optional) ----
+  - model_name: free
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+      input_cost_per_token: 0.0
+      output_cost_per_token: 0.0
+
+  - model_name: free-groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+      input_cost_per_token: 0.0
+      output_cost_per_token: 0.0
+
   # ---- cheap tier ----
   - model_name: cheap
     litellm_params:
@@ -64,6 +81,7 @@ litellm_settings:
   # If a tier's primary vendor is down, try the other vendor.
   # If heavy has no key / fails, degrade to standard instead of erroring.
   fallbacks:
+    - free: ["free-groq", "cheap"]
     - cheap: ["cheap-glm"]
     - standard: ["standard-glm"]
     - heavy: ["standard"]
