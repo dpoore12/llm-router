@@ -80,3 +80,19 @@ systemctl restart llm-router      # after editing config.yaml
   bootstrap to use your own domain).
 - Memory-capped at 900M so it can never starve the BFR engine.
 - Re-running `bootstrap.sh` upgrades LiteLLM and keeps your keys.
+
+## Adding an API key later
+
+On the server, one word per key — the value is typed hidden and the router restarts itself:
+
+    llm-router-key deepseek
+    llm-router-key gemini
+    llm-router-key groq
+
+See spend at any time:
+
+    llm-router-stats
+
+Recover the master key clients use:
+
+    grep ROUTER_MASTER_KEY /etc/llm-router.env
