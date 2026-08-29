@@ -45,7 +45,7 @@ prompt_key () { # $1=VAR $2=label $3=required(yes/no)
   fi
   [[ -n "$val" ]] && echo "${var}=${val}" >> "$ENV_FILE"
 }
-prompt_key DEEPSEEK_API_KEY  "DeepSeek API key (platform.deepseek.com)" required
+prompt_key DEEPSEEK_API_KEY  "DeepSeek API key (platform.deepseek.com — Enter to skip, add later by re-running bootstrap.sh)" optional
 prompt_key ZAI_API_KEY       "Z.AI GLM API key (z.ai, optional fallback)" optional
 prompt_key ANTHROPIC_API_KEY "Anthropic API key (optional, powers the 'heavy' tier)" optional
 prompt_key GEMINI_API_KEY    "Google AI Studio key (aistudio.google.com, optional, powers the 'free' tier)" optional
@@ -61,6 +61,7 @@ fi
 grep -q "^USAGE_DB=" "$ENV_FILE" || echo "USAGE_DB=${DATA_DIR}/usage.db" >> "$ENV_FILE"
 
 # placeholders so LiteLLM never crashes on a missing optional env var
+grep -q "^DEEPSEEK_API_KEY=" "$ENV_FILE"  || { echo "DEEPSEEK_API_KEY=unset" >> "$ENV_FILE"; echo "    NOTE: no DeepSeek key yet — cheap/standard lanes stay off until you re-run bootstrap.sh with one."; }
 grep -q "^ZAI_API_KEY=" "$ENV_FILE"       || echo "ZAI_API_KEY=unset" >> "$ENV_FILE"
 grep -q "^ANTHROPIC_API_KEY=" "$ENV_FILE" || echo "ANTHROPIC_API_KEY=unset" >> "$ENV_FILE"
 grep -q "^GEMINI_API_KEY=" "$ENV_FILE"    || echo "GEMINI_API_KEY=unset" >> "$ENV_FILE"
