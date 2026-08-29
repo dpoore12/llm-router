@@ -16,7 +16,7 @@ so tools that speak "Claude" work without changes.
 ## Install (once, on the box)
 
 ```bash
-git clone https://github.com/DanPoore/llm-router /opt/llm-router
+git clone https://github.com/dpoore12/llm-router /opt/llm-router
 cd /opt/llm-router && bash bootstrap.sh
 ```
 
