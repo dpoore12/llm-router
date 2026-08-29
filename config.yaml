@@ -1,0 +1,82 @@
+# ============================================================
+# Dan's LLM Router — LiteLLM proxy config
+# Three tiers. Callers ask for a tier, not a vendor:
+#   cheap    -> bulk/mechanical work   (DeepSeek V4 Flash, GLM fallback)
+#   standard -> normal coding/drafting (DeepSeek V4 Pro, GLM-5 fallback)
+#   heavy    -> hard reasoning         (Claude, falls back to standard
+#                                       if no Anthropic key is set)
+#
+# Cost-per-token numbers are set explicitly so the usage log prices
+# every request even if LiteLLM's built-in price map lags.
+# Prices are $/token (i.e. $0.14 per 1M input = 0.00000014).
+# ============================================================
+
+model_list:
+  # ---- cheap tier ----
+  - model_name: cheap
+    litellm_params:
+      model: deepseek/deepseek-v4-flash
+      api_key: os.environ/DEEPSEEK_API_KEY
+      input_cost_per_token: 0.00000014
+      output_cost_per_token: 0.00000028
+
+  - model_name: cheap-glm
+    litellm_params:
+      model: openai/glm-4.7-flashx
+      api_base: https://api.z.ai/api/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      input_cost_per_token: 0.00000007
+      output_cost_per_token: 0.0000004
+
+  # ---- standard tier ----
+  - model_name: standard
+    litellm_params:
+      model: deepseek/deepseek-v4-pro
+      api_key: os.environ/DEEPSEEK_API_KEY
+      input_cost_per_token: 0.000000435
+      output_cost_per_token: 0.00000087
+
+  - model_name: standard-glm
+    litellm_params:
+      model: openai/glm-5
+      api_base: https://api.z.ai/api/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      input_cost_per_token: 0.000001
+      output_cost_per_token: 0.0000032
+
+  # ---- heavy tier (only used if ANTHROPIC_API_KEY is set) ----
+  - model_name: heavy
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # ---- self-test model: works with no upstream keys at all ----
+  - model_name: ping
+    litellm_params:
+      model: openai/mock
+      api_key: mock
+      mock_response: "router-ok"
+
+litellm_settings:
+  drop_params: true
+  num_retries: 2
+  request_timeout: 600
+  # If a tier's primary vendor is down, try the other vendor.
+  # If heavy has no key / fails, degrade to standard instead of erroring.
+  fallbacks:
+    - cheap: ["cheap-glm"]
+    - standard: ["standard-glm"]
+    - heavy: ["standard"]
+  callbacks: ["usage_logger.usage_logger"]
+
+router_settings:
+  routing_strategy: simple-shuffle
+  # Anything that asks for a Claude model name by habit gets mapped
+  # to a tier, so Claude Code works without changing its model names.
+  model_group_alias:
+    claude-haiku-4-5: cheap
+    claude-sonnet-4-6: standard
+    claude-opus-4-6: heavy
+
+general_settings:
+  master_key: os.environ/ROUTER_MASTER_KEY
